@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  # 设备监控服务
+  device-monitoring:
+    build:
+      context: ./device-monitoring
+      dockerfile: Dockerfile
+    container_name: mcp_device_monitoring
+    ports:
+      - "8081:8080"
+    environment:
+      - DATABASE_URL=postgresql://admin:admin123@postgres:5432/device_management
+      - REDIS_URL=redis://redis:6379/0
+      - SERVICE_NAME=device-monitoring
+      - LOG_LEVEL=INFO
+    networks:
+      - device_network
+    depends_on:
+      - postgres
+      - redis
+
+  # 运维任务服务
+  maintenance-task:
+    build:
+      context: ./maintenance-task
+      dockerfile: Dockerfile
+    container_name: mcp_maintenance_task
+    ports:
+      - "8082:8080"
+    environment:
+      - DATABASE_URL=postgresql://admin:admin123@postgres:5432/device_management
+      - REDIS_URL=redis://redis:6379/0
+      - SERVICE_NAME=maintenance-task
+      - LOG_LEVEL=INFO
+    networks:
+      - device_network
+    depends_on:
+      - postgres
+      - redis
+
+  # 数据分析服务
+  data-analysis:
+    build:
+      context: ./data-analysis
+      dockerfile: Dockerfile
+    container_name: mcp_data_analysis
+    ports:
+      - "8083:8080"
+    environment:
+      - DATABASE_URL=postgresql://admin:admin123@postgres:5432/device_management
+      - REDIS_URL=redis://redis:6379/0
+      - SERVICE_NAME=data-analysis
+      - LOG_LEVEL=INFO
+    networks:
+      - device_network
+    depends_on:
+      - postgres
+      - redis
+
+networks:
+  device_network:
+    external: true
+    name: device_management_device_network
